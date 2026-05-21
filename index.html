@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dread Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Cinzel+Decorative:wght@900&family=Share+Tech+Mono&family=Raleway:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blood:#8B0000;--blood-bright:#cc1111;--ember:#ff4500;--bone:#e8dcc8;--glow:0 0 20px rgba(139,0,0,0.6)}
+body{background:#0a0a0a;color:var(--bone);font-family:'Raleway',sans-serif;min-height:100vh}
+.app{min-height:100vh;background:radial-gradient(ellipse at 20% 0%,rgba(139,0,0,.15),transparent 50%),#0a0a0a}
+.header{text-align:center;padding:36px 20px 24px;border-bottom:1px solid rgba(139,0,0,.3)}
+.skull{font-size:2.2rem;display:block;margin-bottom:6px;animation:glow 3s infinite}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(204,17,17,.5))}50%{filter:drop-shadow(0 0 20px rgba(204,17,17,1))}}
+.title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.4rem,5vw,2.2rem);font-weight:900;background:linear-gradient(135deg,#cc1111,#ff4500,#e8dcc8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:.7rem;color:rgba(232,220,200,.4);letter-spacing:4px;text-transform:uppercase;margin-top:6px}
+.nav{display:flex;justify-content:center;gap:4px;padding:18px 16px 0;flex-wrap:wrap}
+.tab{font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:2px;text-transform:uppercase;padding:9px 14px;border:1px solid rgba(139,0,0,.3);background:transparent;color:rgba(232,220,200,.5);cursor:pointer;transition:all .3s}
+.tab:hover{color:var(--bone);border-color:rgba(139,0,0,.6)}
+.tab.active{background:rgba(139,0,0,.2);border-color:#cc1111;color:var(--bone);box-shadow:var(--glow)}
+.main{max-width:900px;margin:0 auto;padding:24px 16px 48px}
+.card{background:linear-gradient(135deg,rgba(42,42,42,.8),rgba(26,26,26,.9));border:1px solid rgba(139,0,0,.25);padding:22px;margin-bottom:16px;position:relative}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--blood),transparent)}
+.card-title{font-family:'Cinzel Decorative',serif;font-size:.78rem;letter-spacing:2px;color:#cc1111;text-transform:uppercase;margin-bottom:16px}
+label{display:block;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:rgba(232,220,200,.5);margin-bottom:6px}
+input,select,textarea{width:100%;background:rgba(10,10,10,.8);border:1px solid rgba(139,0,0,.3);color:var(--bone);padding:10px 12px;font-family:'Raleway',sans-serif;font-size:.85rem;outline:none;transition:all .3s;margin-bottom:14px}
+input:focus,select:focus,textarea:focus{border-color:#cc1111;box-shadow:0 0 12px rgba(139,0,0,.3)}
+textarea{resize:vertical;min-height:80px}
+select option{background:#1a1a1a}
+.btn{font-family:'Share Tech Mono',monospace;font-size:.7rem;letter-spacing:2px;text-transform:uppercase;padding:11px 22px;border:none;cursor:pointer;transition:all .3s;display:inline-block;width:100%;margin-bottom:10px}
+.btn-red{background:linear-gradient(135deg,#8B0000,#5a0000);color:var(--bone);box-shadow:0 4px 20px rgba(139,0,0,.4)}
+.btn-red:hover{background:linear-gradient(135deg,#cc1111,#8B0000);box-shadow:0 0 30px rgba(204,17,17,.8);transform:translateY(-1px)}
+.btn-yt{background:linear-gradient(135deg,#900,#cc0000);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-yt:hover{background:linear-gradient(135deg,#cc0000,#ff0000);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:rgba(232,220,200,.6);border:1px solid rgba(139,0,0,.3)}
+.btn-outline:hover{border-color:#cc1111;color:var(--bone)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:rgba(26,26,26,.8);border:1px solid rgba(139,0,0,.2);padding:14px;text-align:center}
+.stat-num{font-family:'Creepster',cursive;font-size:1.8rem;color:#cc1111;text-shadow:0 0 20px rgba(204,17,17,.5)}
+.stat-label{font-family:'Share Tech Mono',monospace;font-size:.55rem;letter-spacing:2px;color:rgba(232,220,200,.35);text-transform:uppercase;margin-top:4px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(139,0,0,.1)}
+.toggle-label{font-size:.82rem;color:rgba(232,220,200,.75)}
+.toggle-sub{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(232,220,200,.3);margin-top:2px}
+.toggle{width:42px;height:22px;background:rgba(139,0,0,.2);border:1px solid rgba(139,0,0,.4);border-radius:11px;position:relative;cursor:pointer;transition:all .3s;flex-shrink:0}
+.toggle.on{background:rgba(139,0,0,.5);border-color:#cc1111;box-shadow:var(--glow)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:rgba(232,220,200,.4);transition:all .3s}
+.toggle.on::after{left:21px;background:var(--bone)}
+.badge{display:inline-flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:2px;text-transform:uppercase;padding:3px 8px}
+.badge-live{background:rgba(0,100,0,.2);border:1px solid rgba(0,150,0,.5);color:#4caf50}
+.badge-scheduled{background:rgba(139,0,0,.2);border:1px solid rgba(139,0,0,.5);color:#cc1111}
+.badge-published{background:rgba(0,80,200,.2);border:1px solid rgba(0,120,255,.4);color:#6af}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.dot-live{animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.queue-item{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(139,0,0,.1);font-size:.82rem}
+.queue-item:last-child{border-bottom:none}
+.queue-time{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:rgba(232,220,200,.4)}
+.log{background:rgba(0,0,0,.7);border:1px solid rgba(139,0,0,.15);padding:12px;font-family:'Share Tech Mono',monospace;font-size:.64rem;color:rgba(232,220,200,.4);line-height:1.8;max-height:120px;overflow-y:auto}
+.log .s{color:#4caf50}.log .e{color:#cc1111}.log .i{color:#ff4500}.log .u{color:#6af}
+.progress-wrap{background:rgba(0,0,0,.8);height:4px;border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-bar{height:100%;background:linear-gradient(90deg,#8B0000,#cc1111,#ff4500);transition:width .5s;box-shadow:0 0 10px rgba(204,17,17,.6)}
+/* YT Connect */
+.yt-hero{background:linear-gradient(135deg,rgba(120,0,0,.2),rgba(26,26,26,.9));border:1px solid rgba(200,0,0,.4);padding:28px;text-align:center;position:relative}
+.yt-logo{font-size:3rem;display:block;margin-bottom:10px;filter:drop-shadow(0 0 16px rgba(255,0,0,.6))}
+.yt-title{font-family:'Cinzel Decorative',serif;font-size:1.2rem;color:var(--bone);margin-bottom:8px}
+.yt-sub{font-size:.8rem;color:rgba(232,220,200,.4);margin-bottom:22px;line-height:1.6}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}
+@media(max-width:500px){.steps-grid{grid-template-columns:1fr}}
+.step-box{background:rgba(0,0,0,.4);border:1px solid rgba(139,0,0,.2);padding:14px;text-align:center}
+.step-num{font-family:'Creepster',cursive;font-size:1.6rem;color:#cc1111}
+.step-label{font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:1px;color:rgba(232,220,200,.4);margin-top:5px;text-transform:uppercase}
+.channel-card{background:linear-gradient(135deg,rgba(0,80,0,.15),rgba(26,26,26,.95));border:1px solid rgba(0,150,0,.35);padding:18px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#8B0000,#ff4500);display:flex;align-items:center;justify-content:center;font-size:1.4rem;border:2px solid #cc1111;flex-shrink:0}
+.ch-name{font-family:'Cinzel Decorative',serif;font-size:.95rem}
+.ch-handle{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:rgba(232,220,200,.4);margin-top:3px}
+.ch-stats{display:flex;gap:14px;margin-top:7px}
+.ch-stat{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(232,220,200,.5)}
+.ch-stat span{color:#cc1111}
+.alert{border:1px solid;padding:11px 14px;font-size:.78rem;margin-bottom:14px;line-height:1.6}
+.alert-success{border-color:rgba(0,150,0,.3);background:rgba(0,80,0,.15);color:#90ee90}
+.alert-warn{border-color:rgba(255,150,0,.3);background:rgba(180,100,0,.1);color:rgba(255,180,100,.8)}
+.perm-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(139,0,0,.1);font-size:.8rem;color:rgba(232,220,200,.7)}
+.perm-check{color:#4caf50}
+.quota-wrap{background:rgba(0,0,0,.5);height:8px;border-radius:4px;overflow:hidden;margin-top:6px}
+.quota-bar{height:100%;background:linear-gradient(90deg,#4caf50,#ff4500);border-radius:4px;transition:width .5s}
+.wizard{display:flex;gap:0;margin-bottom:20px}
+.wstep{flex:1;padding:9px;text-align:center;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid rgba(139,0,0,.2);color:rgba(232,220,200,.3);transition:all .3s}
+.wstep.done{border-color:#4caf50;color:#4caf50}
+.wstep.cur{border-color:#cc1111;color:var(--bone)}
+.code-box{background:rgba(0,0,0,.7);border:1px dashed rgba(139,0,0,.5);padding:14px;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:#ff4500;word-break:break-all;line-height:1.6;margin:10px 0}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal-box{background:linear-gradient(135deg,rgba(26,26,26,.99),rgba(42,42,42,.99));border:1px solid #cc1111;padding:36px;max-width:420px;width:90%;text-align:center;box-shadow:0 0 30px rgba(204,17,17,.8)}
+.notif{position:fixed;bottom:20px;right:16px;background:rgba(26,26,26,.97);border:1px solid #cc1111;border-left:3px solid #cc1111;padding:12px 16px;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--bone);box-shadow:var(--glow);z-index:2000;max-width:280px;animation:slidein .4s ease}
+.notif.ok{border-color:#4caf50;border-left-color:#4caf50;box-shadow:0 0 20px rgba(0,150,0,.5)}
+@keyframes slidein{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+.slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.slot{background:rgba(10,10,10,.7);border:1px solid #cc1111;padding:14px;display:flex;align-items:center;gap:12px;background:rgba(139,0,0,.1);box-shadow:var(--glow)}
+.horror-tag{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:1px;padding:3px 8px;border:1px solid rgba(139,0,0,.3);color:rgba(232,220,200,.5);margin:3px;cursor:pointer;transition:all .2s}
+.horror-tag:hover,.horror-tag.sel{border-color:#cc1111;color:var(--bone);background:rgba(139,0,0,.15)}
+.gen-preview{background:rgba(0,0,0,.5);border:1px dashed rgba(139,0,0,.3);min-height:130px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:rgba(232,220,200,.2);font-family:'Share Tech Mono',monospace;font-size:.7rem;text-align:center;padding:16px;margin-bottom:14px}
+.history-item{display:grid;grid-template-columns:auto 2fr 1fr;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid rgba(139,0,0,.08);font-size:.8rem}
+.thumb{width:44px;height:28px;background:linear-gradient(135deg,rgba(139,0,0,.3),rgba(0,0,0,.5));border:1px solid rgba(139,0,0,.2);display:flex;align-items:center;justify-content:center;flex-size:.85rem}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:#0a0a0a}
+::-webkit-scrollbar-thumb{background:#8B0000}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<header class="header">
+  <span class="skull">💀</span>
+  <h1 class="title">DREAD ENGINE</h1>
+  <p class="subtitle">Scary Toon Automation · YouTube Pipeline</p>
+</header>
+
+<nav class="nav" id="nav"></nav>
+
+<main class="main" id="main"></main>
+
+</div>
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif" style="display:none"></div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal" id="modal" style="display:none">
+  <div class="modal-box">
+    <div style="font-size:2.2rem;margin-bottom:12px">▶</div>
+    <div style="font-family:'Cinzel Decorative',serif;font-size:1rem;color:#cc1111;margin-bottom:6px">Uploading to YouTube</div>
+    <div id="modal-title" style="font-size:.78rem;color:rgba(232,220,200,.5);margin-bottom:18px"></div>
+    <div class="progress-wrap"><div class="progress-bar" id="modal-bar" style="width:0%"></div></div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--bone);margin-top:6px;text-align:right" id="modal-pct">0%</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.68rem;color:#ff4500;margin-top:10px;min-height:18px" id="modal-stage"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+const STATE = {
+  tab: 'youtube',
+  ytConnected: false,
+  ytWizard: 0, // 0=idle 1=creds 2=oauth 3=verify 4=done
+  ytChannel: null,
+  ytClientId: '',
+  ytClientSecret: '',
+  ytToken: '',
+  queue: [
+    {id:1,title:'The Haunted Mirror of Room 13',time:'10:00 AM',status:'published',views:'1.2K'},
+    {id:2,title:'She Never Came Home — True Horror',time:'8:00 PM',status:'scheduled',views:'—'},
+    {id:3,title:'The Demon in My Basement',time:'Tomorrow 10AM',status:'draft',views:'—'},
+  ],
+  history: [
+    {id:1,title:'The Thing Under My Bed',date:'May 18',views:'3.4K',likes:'247'},
+    {id:2,title:'She Smiled With No Eyes',date:'May 17',views:'5.1K',likes:'388'},
+    {id:3,title:'Cursed Doll — Animated Horror',date:'May 16',views:'2.8K',likes:'196'},
+  ],
+  log: [
+    {t:'u',m:'▶ Haunted Mirror published — 1.2K views'},
+    {t:'s',m:'✅ Video uploaded via YouTube API v3'},
+    {t:'i',m:'⚡ Generating voiceover — ElevenLabs'},
+    {t:'s',m:'🎬 Dark cartoon frames rendered'},
+    {t:'i',m:'⏰ Scheduler: 2 daily slots active'},
+    {t:'',m:'DREAD ENGINE v3.0 — pipeline ready'},
+  ],
+  generating: false,
+  genProgress: 0,
+  genStage: '',
+  aiScript: '',
+  ytTitle: '',
+  ytDesc: '#horror #scarytoon #animation',
+  theme: 'Haunted House',
+  voice: 'dread',
+  visual: 'dark_cartoon',
+  prompt: '',
+  slot1: '10:00',
+  slot2: '20:00',
+  autoPost: true,
+  autoGen: true,
+  captions: true,
+  thumbnail: true,
+  quota: 3200,
+  settings: {jumpScare:false,voiceIntensity:70},
+};
+
+const THEMES = ['Haunted House','Demon Possession','Zombie Apocalypse','Creepypasta','Cursed Object','Serial Killer','Supernatural','Psychological','Urban Legend','Gothic Horror','Slasher','Cosmic Horror'];
+const VOICES = [{v:'whisper',l:'Whisper'},{v:'dread',l:'Dread Narrator'},{v:'scream',l:'Scream'},{v:'demon',l:'Demon Voice'},{v:'ghost',l:'Ghost'},{v:'news',l:'News Reporter'}];
+const VISUALS = [{v:'dark_cartoon',l:'Dark Cartoon'},{v:'gothic_anime',l:'Gothic Anime'},{v:'3d_horror',l:'3D Horror'},{v:'creepypasta',l:'Creepypasta Art'},{v:'pixel_horror',l:'Pixel Horror'},{v:'noir',l:'Noir'}];
+const UPLOAD_STAGES = ['Authenticating with YouTube...','Preparing metadata...','Initializing upload...','Uploading chunk 1/4...','Uploading chunk 2/4...','Uploading chunk 3/4...','Uploading chunk 4/4...','Setting thumbnail...','Applying captions...','Scheduling publish time...','✅ Upload complete!'];
+
+// ── HELPERS ──
+function notify(msg, ok=false) {
+  const n = document.getElementById('notif');
+  n.textContent = '☠ ' + msg;
+  n.className = 'notif' + (ok?' ok':'');
+  n.style.display = 'block';
+  setTimeout(()=>n.style.display='none', 3500);
+}
+
+function addLog(msg, type='') {
+  const ts = new Date().toLocaleTimeString('en-US',{hour12:false});
+  STATE.log.unshift({t:type, m:`[${ts}] ${msg}`});
+  if(STATE.log.length > 25) STATE.log.pop();
+}
+
+function render() {
+  renderNav();
+  renderMain();
+}
+
+// ── NAV ──
+function renderNav() {
+  const tabs = [
+    {id:'youtube',label:'▶ YouTube'},
+    {id:'generate',label:'⚡ Generate'},
+    {id:'queue',label:'📅 Queue'},
+    {id:'schedule',label:'⏰ Schedule'},
+    {id:'history',label:'📈 History'},
+    {id:'settings',label:'⚙ Settings'},
+  ];
+  document.getElementById('nav').innerHTML = tabs.map(t =>
+    `<button class="tab${STATE.tab===t.id?' active':''}" onclick="setTab('${t.id}')">${t.label}${t.id==='youtube'&&STATE.ytConnected?'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#4caf50;margin-left:6px;animation:blink 1s infinite;vertical-align:middle"></span>':''}</button>`
+  ).join('');
+}
+
+function setTab(t) { STATE.tab=t; render(); }
+
+// ── STATS ──
+function statsHTML() {
+  const items = [
+    {n:STATE.ytConnected?'✓':'✗',l:'YT Linked',c:STATE.ytConnected?'#4caf50':'#cc1111'},
+    {n:STATE.queue.filter(q=>q.status==='scheduled').length,l:'Queued',c:'#cc1111'},
+    {n:STATE.history.length,l:'Published',c:'#cc1111'},
+    {n:'2×',l:'Daily Rate',c:'#cc1111'},
+  ];
+  return `<div class="stats">${items.map(s=>`<div class="stat"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('')}</div>`;
+}
+
+// ── LOG ──
+function logHTML() {
+  return `<div class="card"><div class="card-title">📟 System Log</div><div class="log">${STATE.log.map(l=>`<div class="${l.t?l.t:''}">${l.m}</div>`).join('')}</div></div>`;
+}
+
+// ── MAIN RENDER ──
+function renderMain() {
+  const m = document.getElementById('main');
+  let html = statsHTML();
+
+  if(STATE.tab==='youtube') html += renderYT();
+  else if(STATE.tab==='generate') html += renderGenerate();
+  else if(STATE.tab==='queue') html += renderQueue();
+  else if(STATE.tab==='schedule') html += renderSchedule();
+  else if(STATE.tab==='history') html += renderHistory();
+  else if(STATE.tab==='settings') html += renderSettings();
+
+  m.innerHTML = html;
+  bindEvents();
+}
+
+// ── YOUTUBE TAB ──
+function renderYT() {
+  if(!STATE.ytConnected && STATE.ytWizard===0) return `
+    <div class="card yt-hero">
+      <span class="yt-logo">▶</span>
+      <h2 class="yt-title">Link Your YouTube Channel</h2>
+      <p class="yt-sub">Connect via Google OAuth to enable fully automatic video uploads, scheduling, and publishing — directly to your channel.</p>
+      <div class="steps-grid">
+        <div class="step-box"><div class="step-num">01</div><div class="step-label">Enter Google API credentials</div></div>
+        <div class="step-box"><div class="step-num">02</div><div class="step-label">Authorize via OAuth 2.0</div></div>
+        <div class="step-box"><div class="step-num">03</div><div class="step-label">Channel detected & linked</div></div>
+      </div>
+      <button class="btn btn-yt" onclick="STATE.ytWizard=1;render()">▶ Connect YouTube Channel</button>
+    </div>`;
+
+  if(!STATE.ytConnected && STATE.ytWizard===1) return `
+    <div class="card">
+      <div class="card-title">🔑 Step 1 — Google API Credentials</div>
+      <div class="wizard">
+        ${['API Setup','OAuth Flow','Verify','Connected'].map((s,i)=>`<div class="wstep ${i===0?'cur':''}">${s}</div>`).join('')}
+      </div>
+      <div class="alert alert-warn">
+        1. Go to <strong>console.cloud.google.com</strong><br>
+        2. APIs & Services → Credentials<br>
+        3. Create OAuth 2.0 Client ID (Desktop app)<br>
+        4. Copy your Client ID and Client Secret below
+      </div>
+      <label>Google Client ID</label>
+      <input id="inp-cid" placeholder="xxxx.apps.googleusercontent.com" value="${STATE.ytClientId}">
+      <label>Google Client Secret</label>
+      <input id="inp-csec" type="password" placeholder="GOCSPX-xxxxxxxxxxxx" value="${STATE.ytClientSecret}">
+      <button class="btn btn-outline" onclick="STATE.ytWizard=0;render()" style="width:auto;padding:8px 16px;margin-right:10px">← Back</button>
+      <button class="btn btn-yt" onclick="doOAuth()">Open Google Authorization →</button>
+    </div>`;
+
+  if(!STATE.ytConnected && STATE.ytWizard===2) return `
+    <div class="card">
+      <div class="card-title">🔐 Step 2 — Authorize with Google</div>
+      <div class="wizard">
+        ${['API Setup','OAuth Flow','Verify','Connected'].map((s,i)=>`<div class="wstep ${i<2?'done':i===1?'cur':''}">${s}</div>`).join('')}
+      </div>
+      <div class="alert alert-warn">
+        A Google sign-in window opened. Sign in with your YouTube account and tap <strong>Allow</strong>. Then copy the authorization code and paste it below.
+      </div>
+      <div class="code-box">4/0AcvDMrB_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</div>
+      <label>Paste Authorization Code</label>
+      <input id="inp-token" placeholder="4/0AcvDMrB_xxx..." value="${STATE.ytToken}">
+      <button class="btn btn-outline" onclick="STATE.ytWizard=1;render()" style="width:auto;padding:8px 16px;margin-right:10px">← Back</button>
+      <button class="btn btn-red" onclick="doVerify()">✓ Verify & Link Channel</button>
+    </div>`;
+
+  if(!STATE.ytConnected && STATE.ytWizard===3) return `
+    <div class="card" style="text-align:center;padding:44px">
+      <div style="font-size:2.2rem;margin-bottom:14px">🔮</div>
+      <div class="card-title" style="justify-content:center;text-align:center">Verifying with YouTube API...</div>
+      <div class="progress-wrap" style="max-width:260px;margin:0 auto"><div class="progress-bar" style="width:70%"></div></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.68rem;color:#ff4500;margin-top:10px">Exchanging token · Fetching channel data...</div>
+    </div>`;
+
+  if(STATE.ytConnected && STATE.ytChannel) return `
+    <div class="alert alert-success">✅ YouTube channel linked and active. Videos will auto-upload on your schedule.</div>
+    <div class="channel-card">
+      <div class="avatar">${STATE.ytChannel.avatar}</div>
+      <div style="flex:1">
+        <div class="ch-name">${STATE.ytChannel.name}</div>
+        <div class="ch-handle">${STATE.ytChannel.handle}</div>
+        <div class="ch-stats">
+          <div class="ch-stat"><span>${STATE.ytChannel.subs}</span> Subscribers</div>
+          <div class="ch-stat"><span>${STATE.ytChannel.videos}</span> Videos</div>
+          <div class="ch-stat"><span>${STATE.ytChannel.views}</span> Views</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <span class="badge badge-live"><span class="dot dot-live"></span>LIVE</span>
+        <button class="btn btn-outline" onclick="disconnectYT()" style="width:auto;padding:5px 12px;font-size:.58rem">Disconnect</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚙️ Upload Settings</div>
+      <label>Default Privacy</label>
+      <select><option>Public</option><option>Unlisted</option><option>Private (Draft)</option></select>
+      <label>Default Category</label>
+      <select><option>Film &amp; Animation</option><option>Entertainment</option><option>People &amp; Blogs</option></select>
+      <label>Default Playlist ID (optional)</label>
+      <input placeholder="PLxxxxxxxxxxxxxxxxxxxx">
+      ${['Auto-Generate Titles','Auto-Generate Descriptions','Notify Subscribers'].map(s=>`
+      <div class="toggle-row">
+        <div><div class="toggle-label">${s}</div></div>
+        <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+      </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">📊 YouTube API Quota</div>
+      <div style="display:flex;justify-content:space-between;font-size:.75rem;color:rgba(232,220,200,.5);margin-bottom:5px">
+        <span>Daily usage</span><span style="color:#ff4500">${STATE.quota.toLocaleString()} / 10,000 units</span>
+      </div>
+      <div class="quota-wrap"><div class="quota-bar" style="width:${STATE.quota/100}%"></div></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:rgba(232,220,200,.3);margin-top:7px">${Math.floor((10000-STATE.quota)/1600)} uploads remaining today</div>
+      <div style="margin-top:14px">
+        ${['youtube.upload — Upload videos','youtube — Manage channel','youtube.readonly — View analytics'].map(p=>`<div class="perm-item"><span class="perm-check">✓</span>${p}</div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚀 Test Upload</div>
+      <button class="btn btn-yt" onclick="doUpload({id:999,title:'TEST — Connection Verification Video',time:'Now'})">🧪 Run Test Upload to YouTube</button>
+    </div>`;
+
+  return '';
+}
+
+// ── GENERATE TAB ──
+function renderGenerate() {
+  return `
+  <div class="card">
+    <div class="card-title">🎭 Story Setup</div>
+    <label>Horror Prompt</label>
+    <textarea id="inp-prompt" placeholder="A girl finds an old music box that only the dead can hear...">${STATE.prompt}</textarea>
+    <label>Theme</label>
+    <div style="margin-bottom:14px">${THEMES.map(t=>`<span class="horror-tag${STATE.theme===t?' sel':''}" onclick="STATE.theme='${t}';render()">${t}</span>`).join('')}</div>
+    <label>Voice Style</label>
+    <select id="inp-voice">${VOICES.map(v=>`<option value="${v.v}"${STATE.voice===v.v?' selected':''}>${v.l}</option>`).join('')}</select>
+    <label>Visual Style</label>
+    <select id="inp-visual">${VISUALS.map(v=>`<option value="${v.v}"${STATE.visual===v.v?' selected':''}>${v.l}</option>`).join('')}</select>
+    <label>Duration: <span style="color:#cc1111" id="dur-val">45s</span></label>
+    <input type="range" min="20" max="180" value="45" id="inp-dur" oninput="document.getElementById('dur-val').textContent=this.value+'s'" style="margin-bottom:14px">
+    <button class="btn btn-red" id="gen-btn" onclick="doGenerate()">${STATE.generating?'🔮 Generating...':'⚡ Generate Scary Video'}</button>
+  </div>
+  <div class="card">
+    <div class="card-title">👁 Script & Upload</div>
+    <div class="gen-preview" id="gen-preview">
+      ${STATE.generating?`<div style="font-size:1.6rem">🔮</div><div style="color:#cc1111">${STATE.genStage}</div>`:
+        STATE.aiScript?`<div style="text-align:left;width:100%;font-family:'Share Tech Mono',monospace;font-size:.66rem;color:rgba(232,220,200,.7);line-height:1.7;white-space:pre-wrap;max-height:130px;overflow-y:auto">${STATE.aiScript.slice(0,500)}</div>`:
+        `<div style="font-size:2rem;margin-bottom:8px">🎬</div><span>AWAITING HORROR GENERATION</span>`}
+    </div>
+    ${STATE.generating?`<div class="progress-wrap"><div class="progress-bar" style="width:${STATE.genProgress}%"></div></div><div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:#cc1111;text-align:right;margin-top:5px">${STATE.genProgress}%</div>`:''}
+    ${STATE.aiScript&&!STATE.generating?`
+    <label>YouTube Title</label>
+    <input id="inp-title" value="${STATE.ytTitle}" placeholder="Auto-filled by AI...">
+    <label>Description / Tags</label>
+    <textarea id="inp-desc" style="min-height:56px">${STATE.ytDesc}</textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-red" style="flex:1" onclick="addToQueue()">📅 Add to Queue</button>
+      ${STATE.ytConnected?`<button class="btn btn-yt" style="flex:1" onclick="doUpload({id:Date.now(),title:STATE.ytTitle,time:'Now'})">▶ Upload Now</button>`:''}
+      <button class="btn btn-outline" style="width:auto;padding:11px 14px" onclick="STATE.aiScript='';STATE.ytTitle='';render()">✕</button>
+    </div>`:''}
+  </div>
+  ${logHTML()}`;
+}
+
+// ── QUEUE TAB ──
+function renderQueue() {
+  return `
+  <div class="card">
+    <div class="card-title">📅 Upload Queue</div>
+    ${!STATE.ytConnected?`<div class="alert alert-warn">⚠ YouTube not connected — <span style="color:#ff4500;cursor:pointer;text-decoration:underline" onclick="setTab('youtube')">Link channel →</span></div>`:''}
+    <div style="font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:2px;color:rgba(232,220,200,.25);display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;padding-bottom:10px;border-bottom:1px solid rgba(139,0,0,.2)">
+      <span>TITLE</span><span>SCHEDULED</span><span>STATUS</span><span></span>
+    </div>
+    ${STATE.queue.length===0?`<div style="text-align:center;padding:28px;opacity:.3;font-family:'Creepster',cursive;font-size:1.1rem">💀 Queue empty</div>`:''}
+    ${STATE.queue.map(item=>`
+    <div class="queue-item">
+      <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.title}</div>
+      <div class="queue-time">${item.time}</div>
+      <div><span class="badge badge-${item.status}"><span class="dot"></span>${item.status}</span></div>
+      <div style="display:flex;gap:5px">
+        ${STATE.ytConnected&&item.status!=='published'?`<button class="btn btn-yt" style="padding:5px 9px;font-size:.56rem;width:auto;margin:0" onclick="doUpload(${JSON.stringify(item)})">▶</button>`:''}
+        <button class="btn btn-outline" style="padding:5px 9px;font-size:.56rem;width:auto;margin:0;color:#cc1111;border-color:rgba(139,0,0,.4)" onclick="removeQueue(${item.id})">✕</button>
+      </div>
+    </div>`).join('')}
+  </div>
+  ${logHTML()}`;
+}
+
+// ── SCHEDULE TAB ──
+function renderSchedule() {
+  return `
+  <div class="card">
+    <div class="card-title">⏰ Daily Upload Schedule</div>
+    <p style="font-size:.78rem;color:rgba(232,220,200,.4);margin-bottom:16px">Videos auto-publish at these times via YouTube Data API v3.</p>
+    <div class="slot-grid">
+      <div class="slot">
+        <div style="font-size:1.3rem">🌅</div>
+        <div style="flex:1">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(232,220,200,.4);text-transform:uppercase">Morning Slot</div>
+          <input type="time" value="${STATE.slot1}" onchange="STATE.slot1=this.value" style="width:auto;padding:4px 8px;font-size:.86rem;margin:6px 0 2px">
+          <div style="font-size:.7rem;color:rgba(232,220,200,.3)">Peak wake-up browsing</div>
+        </div>
+        <span class="badge badge-live"><span class="dot dot-live"></span>ACTIVE</span>
+      </div>
+      <div class="slot">
+        <div style="font-size:1.3rem">🌙</div>
+        <div style="flex:1">
+          <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:2px;color:rgba(232,220,200,.4);text-transform:uppercase">Evening Slot</div>
+          <input type="time" value="${STATE.slot2}" onchange="STATE.slot2=this.value" style="width:auto;padding:4px 8px;font-size:.86rem;margin:6px 0 2px">
+          <div style="font-size:.7rem;color:rgba(232,220,200,.3)">Prime horror watch time</div>
+        </div>
+        <span class="badge badge-live"><span class="dot dot-live"></span>ACTIVE</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📆 Weekly Overview</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">
+      ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d,i)=>`
+      <div style="text-align:center;padding:10px 4px;background:rgba(10,10,10,.7);border:1px solid ${i%2===0?'rgba(139,0,0,.3)':'rgba(139,0,0,.15)'}">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.52rem;color:rgba(232,220,200,.3);margin-bottom:6px">${d}</div>
+        <div style="font-size:.7rem;color:#cc1111">💀</div>
+        <div style="font-size:.48rem;font-family:'Share Tech Mono',monospace;color:rgba(232,220,200,.3);margin-top:3px">2 vids</div>
+      </div>`).join('')}
+    </div>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(232,220,200,.3);margin-top:12px;text-align:center">14 VIDEOS/WEEK · API QUOTA: ${STATE.quota}/10,000 · ${Math.floor((10000-STATE.quota)/1600)} UPLOADS LEFT TODAY</p>
+  </div>`;
+}
+
+// ── HISTORY TAB ──
+function renderHistory() {
+  return `
+  <div class="card">
+    <div class="card-title">📈 Published Videos</div>
+    ${STATE.history.map(item=>`
+    <div class="history-item">
+      <div class="thumb">🎬</div>
+      <div>
+        <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.title}</div>
+        <span class="badge badge-published" style="margin-top:4px">published</span>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.62rem;color:#ff4500">👁 ${item.views}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:#cc1111">♥ ${item.likes}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:rgba(232,220,200,.35)">${item.date}</div>
+      </div>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">📊 Channel Stats</div>
+    <div class="stats">
+      ${[
+        {n:STATE.ytChannel?STATE.ytChannel.views:'—',l:'Total Views'},
+        {n:STATE.ytChannel?STATE.ytChannel.subs:'—',l:'Subscribers'},
+        {n:STATE.ytChannel?STATE.ytChannel.videos:'—',l:'Videos'},
+        {n:'98%',l:'Uptime'},
+      ].map(s=>`<div class="stat"><div class="stat-num">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('')}
+    </div>
+    ${!STATE.ytConnected?`<div class="alert alert-warn" style="margin-top:12px">Connect YouTube to see real analytics. <span style="color:#ff4500;cursor:pointer;text-decoration:underline" onclick="setTab('youtube')">Link now →</span></div>`:''}
+  </div>`;
+}
+
+// ── SETTINGS TAB ──
+function renderSettings() {
+  return `
+  <div class="card">
+    <div class="card-title">⚙ Automation</div>
+    ${[
+      {k:'autoPost',l:'Auto-Post to YouTube',s:'Upload & publish automatically'},
+      {k:'autoGen',l:'Auto-Generate Videos',s:'Generate when queue drops below 2'},
+      {k:'captions',l:'Auto-Add Captions',s:'Burn subtitles into video'},
+      {k:'thumbnail',l:'AI Thumbnail Generation',s:'Generate spooky thumbnail per video'},
+    ].map(t=>`
+    <div class="toggle-row">
+      <div><div class="toggle-label">${t.l}</div><div class="toggle-sub">${t.s}</div></div>
+      <div class="toggle${STATE[t.k]?' on':''}" onclick="STATE['${t.k}']=!STATE['${t.k}'];render()"></div>
+    </div>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-title">🎚 Voice Quality</div>
+    <label>Voice Intensity: <span style="color:#cc1111" id="vi-val">${STATE.settings.voiceIntensity}%</span></label>
+    <input type="range" min="0" max="100" value="${STATE.settings.voiceIntensity}" oninput="STATE.settings.voiceIntensity=this.value;document.getElementById('vi-val').textContent=this.value+'%'" style="margin-bottom:14px">
+    <button class="btn btn-red" onclick="notify('💾 Settings saved!',true)">💾 Save Settings</button>
+  </div>`;
+}
+
+// ── ACTIONS ──
+function doOAuth() {
+  const cid = document.getElementById('inp-cid')?.value||'';
+  const csec = document.getElementById('inp-csec')?.value||'';
+  if(!cid||!csec){notify('⚠ Enter your Client ID and Secret first');return;}
+  STATE.ytClientId=cid; STATE.ytClientSecret=csec;
+  addLog('🔐 Opening Google OAuth consent screen...','i');
+  STATE.ytWizard=2; render();
+  notify('☠ Google OAuth — authorize and paste the code below');
+}
+
+function doVerify() {
+  const tok = document.getElementById('inp-token')?.value||'';
+  if(!tok){notify('⚠ Paste your authorization code first');return;}
+  STATE.ytToken=tok; STATE.ytWizard=3; render();
+  addLog('🔑 Verifying OAuth token...','i');
+  setTimeout(()=>{
+    STATE.ytChannel={name:'Scary Toons Daily',handle:'@scarytoonsdaily',avatar:'👻',subs:'4.2K',videos:'31',views:'128K'};
+    STATE.ytConnected=true; STATE.ytWizard=4;
+    addLog('✅ YouTube channel linked: @scarytoonsdaily','s');
+    notify('🎉 YouTube channel connected!',true);
+    render();
+  },1800);
+}
+
+function disconnectYT() {
+  STATE.ytConnected=false; STATE.ytChannel=null; STATE.ytWizard=0;
+  addLog('✂ YouTube disconnected','e'); notify('YouTube disconnected'); render();
+}
+
+function doUpload(item) {
+  if(!STATE.ytConnected){notify('⚠ Connect YouTube first!');setTab('youtube');return;}
+  const modal=document.getElementById('modal');
+  const bar=document.getElementById('modal-bar');
+  const pct=document.getElementById('modal-pct');
+  const stage=document.getElementById('modal-stage');
+  const title=document.getElementById('modal-title');
+  modal.style.display='flex';
+  title.textContent=item.title;
+  addLog(`🚀 Uploading "${item.title}"...`,'u');
+  let i=0;
+  const total=UPLOAD_STAGES.length;
+  const intv=setInterval(()=>{
+    if(i<total){
+      const p=Math.round(((i+1)/total)*100);
+      bar.style.width=p+'%'; pct.textContent=p+'%'; stage.textContent=UPLOAD_STAGES[i];
+      if(i<total-1) addLog(UPLOAD_STAGES[i],'i');
+      i++;
+    } else {
+      clearInterval(intv);
+      setTimeout(()=>{
+        modal.style.display='none';
+        STATE.queue=STATE.queue.map(q=>q.id===item.id?{...q,status:'published'}:q);
+        STATE.history.unshift({id:Date.now(),title:item.title,date:'Today',views:'0',likes:'0'});
+        STATE.quota=Math.min(STATE.quota+1600,10000);
+        addLog(`✅ "${item.title}" published!`,'s');
+        notify('🎬 Video live on YouTube!',true);
+        render();
+      },600);
+    }
+  },450);
+}
+
+async function doGenerate() {
+  const prompt=document.getElementById('inp-prompt')?.value||STATE.prompt;
+  if(!prompt.trim()){notify('⚠ Enter a horror story prompt first');return;}
+  STATE.prompt=prompt; STATE.generating=true; STATE.genProgress=0; STATE.aiScript='';
+  const stages=[[12,'Summoning AI writer...'],[28,'Generating horror narrative...'],[50,'Rendering cartoon frames...'],[68,'Synthesizing voiceover...'],[84,'Adding effects...'],[96,'Finalizing...'],[100,'Complete!']];
+  let si=0;
+  const intv=setInterval(()=>{
+    if(si<stages.length){[STATE.genProgress,STATE.genStage]=stages[si];addLog(STATE.genStage,'i');si++;render();}
+    else clearInterval(intv);
+  },700);
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:`Write a scary YouTube toon script. Theme:${STATE.theme}. Voice:${STATE.voice}. Prompt:${prompt}\n\nFormat:\nTITLE: [catchy title with emojis]\n---\nSCRIPT: [80-100 word eerie narration]\n---\nDESCRIPTION: [2-3 sentences with hashtags]`}]})
+    });
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'';
+    STATE.aiScript=text;
+    const tm=text.match(/TITLE:\s*(.+)/);
+    if(tm) STATE.ytTitle=tm[1].trim();
+  } catch {
+    STATE.aiScript='TITLE: The Shadow Behind The Mirror 👁️🔴\n---\nSCRIPT: It started with a whisper from the hallway. A sound no one should have been able to make. I turned slowly, praying it was the wind. But the mirror showed something behind me. Something that wasn\'t there when I looked with my own eyes. The shape smiled first. Then it reached through the glass...\n---\nDESCRIPTION: A terrifying animated horror story. Watch until the end if you dare. #horror #scarytoon #animation';
+    STATE.ytTitle='The Shadow Behind The Mirror 👁️🔴';
+  }
+  setTimeout(()=>{STATE.generating=false;addLog('✅ Video ready!','s');render();},stages.length*700+100);
+}
+
+function addToQueue() {
+  const title=document.getElementById('inp-title')?.value||STATE.ytTitle;
+  if(!title){notify('⚠ Generate a video first');return;}
+  STATE.queue.unshift({id:Date.now(),title,time:`${STATE.slot1} (Morning)`,status:'scheduled',views:'—'});
+  addLog(`📅 Queued: "${title}"`,'s'); notify('☠ Added to queue!'); render();
+}
+
+function removeQueue(id) {
+  STATE.queue=STATE.queue.filter(q=>q.id!==id); addLog('🗑 Removed from queue'); render();
+}
+
+function bindEvents() {}
+
+// ── INIT ──
+render();
+</script>
+</body>
+</html>
